@@ -51,5 +51,24 @@ def test_keel_call_multiline_response_parsing():
     helper = os.path.join(ADAPTER, "hooks", "_keel_call.sh")
     assert os.path.exists(helper)
     with open(helper) as f:
-        src = f.read()
-    assert "__KEEL_STATUS__" in src
+        assert "__KEEL_STATUS__" in f.read()
+
+
+def test_keel_call_parses_a_multiline_body():
+    """B4: source the real helper and feed it (via a mocked curl) a response whose
+    JSON body spans multiple lines — the status sentinel must still split cleanly and
+    keel_call must return the inner tool text, proving the parse is newline-robust."""
+    import subprocess
+    helper = os.path.join(ADAPTER, "hooks", "_keel_call.sh")
+    # curl mock: a MULTILINE body, then the sentinel + status on the final line.
+    script = f'''
+    set -u
+    . "{helper}"
+    curl() {{ printf '%s' '{{"result":{{"isError":false,"content":[{{"type":"text",
+"text":"hello-multiline"}}]}}}}'; printf '\\n__KEEL_STATUS__:200'; }}
+    export KEEL_TOKEN=t KEEL_URL=http://x/mcp
+    keel_call get_context '{{}}' s1
+    '''
+    r = subprocess.run(["bash", "-c", script], capture_output=True, text=True)
+    assert r.returncode == 0, r.stderr
+    assert r.stdout.strip() == "hello-multiline"

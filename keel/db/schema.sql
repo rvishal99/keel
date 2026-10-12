@@ -117,6 +117,14 @@ CREATE TABLE IF NOT EXISTS alert (
 );
 ALTER TABLE alert ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
 CREATE INDEX IF NOT EXISTS alert_target_ack_idx ON alert (target_participant_id, acknowledged_at);
+-- Dedupe pre-existing duplicate unacked change-alerts BEFORE the unique index, so
+-- ensure_schema can't fail on a deployment that accumulated them before the dedupe fix.
+DELETE FROM alert a USING alert b
+ WHERE a.kind = 'change' AND a.acknowledged_at IS NULL
+   AND b.kind = 'change' AND b.acknowledged_at IS NULL
+   AND a.target_participant_id = b.target_participant_id
+   AND a.ref_id = b.ref_id
+   AND a.ctid > b.ctid;
 CREATE UNIQUE INDEX IF NOT EXISTS alert_unacked_change_idx ON alert (target_participant_id, ref_id)
     WHERE kind = 'change' AND acknowledged_at IS NULL;
 

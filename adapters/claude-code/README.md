@@ -74,6 +74,16 @@ re-check note and leaves a `change` alert in your inbox. This is the remediation
 to the PreToolUse deny-once prevention. Skipped (silent) when the map is absent, nothing
 matches, or Keel is unreachable.
 
+## Session contract
+Keel authenticates every call by bearer token (one person/project); `X-Keel-Session`
+identifies the session. **Read tools** (`get_context`, the dashboard `/api/*`) work even
+without a valid session header — they return project-wide data and an empty inbox.
+**Session-scoped write/registration tools** (`record_decision`, `accept_handoff`,
+`ack_alert`, …) require a registered participant and fail with a clear "session not
+registered; call register_session first" if the session is missing or unregistered. The
+SessionStart hook registers the session, so in normal use this is automatic. An
+unexpanded `${CLAUDE_SESSION_ID}` header is treated as no session (never a bogus participant).
+
 ## Fail-open guarantee
 Every hook exits `0` on any error (server down, bad token, missing `jq`/`curl`,
 malformed input). A Keel outage never blocks or interrupts your session.
