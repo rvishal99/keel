@@ -34,7 +34,9 @@ async def create_handoff(pool, principal: Principal, *, to_person, scope_tags,
             if to_session:
                 rp = await repo.get_participant(conn, principal.project_id,
                                                 recipient["id"], to_session)
-                to_part_id = rp["id"] if rp else None
+                if rp is None:
+                    raise LookupError(f"session {to_session!r} not found for recipient {to_person!r}")
+                to_part_id = rp["id"]
             decisions = await repo.active_decisions(conn, principal.project_id, tags)
             conflicts = await repo.open_conflicts_in_scope(conn, principal.project_id, tags)
             decision_ids = [d["id"] for d in decisions]

@@ -100,3 +100,25 @@ async def test_unexpanded_session_header_ignored(db_pool):
         r = await c.get("/probe", headers={"Authorization": "Bearer dev-token",
                                            "X-Keel-Session": "${CLAUDE_SESSION_ID}"})
     assert r.status_code == 200 and r.json()["session"] is None
+
+
+async def test_session_enforcement_contract(db_pool):
+    """B3 session contract:
+    - Read tools (get_context) work with session=None and return empty inbox.
+    - Session-scoped write tools (record_decision) fail with LookupError when session=None.
+    """
+    from keel.server import call_tool_for_test
+    await _seed_token(db_pool)
+
+    # Session-less read succeeds:
+    ctx = await call_tool_for_test("dev-token", None, "get_context", {"scope_tags": ["api:orders"]})
+    assert ctx["decisions"] == []
+    assert ctx["inbox"] == {"alerts": [], "handoffs": [], "new_lessons": []}
+
+    # Session-less write fails clearly:
+    with pytest.raises(LookupError, match="session not registered; call register_session first"):
+        await call_tool_for_test("dev-token", None, "record_decision", {
+            "statement": "orders use cursor pagination",
+            "rationale": "scales",
+            "scope_tags": ["api:orders"],
+        })

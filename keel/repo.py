@@ -150,10 +150,13 @@ async def participants_of_person(conn, project_id, person_id) -> list[asyncpg.Re
 
 
 async def insert_alert(conn, *, project_id, target_participant_id, target_person_id,
-                       kind, ref_id) -> asyncpg.Record:
+                       kind, ref_id) -> asyncpg.Record | None:
     return await conn.fetchrow(
         """INSERT INTO alert (project_id, target_participant_id, target_person_id, kind, ref_id)
-           VALUES ($1,$2,$3,$4,$5) RETURNING *""",
+           VALUES ($1,$2,$3,$4,$5)
+           ON CONFLICT (target_participant_id, ref_id) WHERE kind='change' AND acknowledged_at IS NULL
+           DO NOTHING
+           RETURNING *""",
         project_id, target_participant_id, target_person_id, kind, ref_id)
 
 
