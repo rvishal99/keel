@@ -109,11 +109,25 @@ keel/
 └── pyproject.toml
 ```
 
-Design docs (`PRD`, `ARCHITECTURE`, `BUSINESS`, `HACKATHON_PLAN`, `OPEN_QUESTIONS`) are maintained alongside this repo and are not part of the published tree.
+## Documentation
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — components, data model, conflict pipeline, delivery, providers, deploy.
+- [adapters/agent-skill/SKILL.md](adapters/agent-skill/SKILL.md) — how any MCP agent uses the 17 tools.
+- [deploy/cloudrun/README.md](deploy/cloudrun/README.md) — deploy on Google Cloud Run (Gemini + Cloud SQL/pgvector).
+- [demo/DEMO.md](demo/DEMO.md) — the live demo runbook.
+- [BACKLOG.md](BACKLOG.md) — roadmap as issue-ready items.
+- [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+
+(The longer design docs — `PRD`, `BUSINESS`, `HACKATHON_PLAN`, `OPEN_QUESTIONS` — are kept alongside the repo, outside the published tree.)
 
 ## Status & roadmap
 
-Pre-v1. The server, 15 MCP tools, the five-stage conflict pipeline, propagation, and the piggyback inbox are implemented with a pytest suite. Next: the Claude Code adapter (hook scripts + MCP config + skill file) and the hackathon demo cut (`HACKATHON_PLAN.md` §3). Priorities are gated **P0** (hackathon) / **P1** (open-source v1) / **P2** (later) in the PRD.
+Pre-v1. Implemented: the MCP server with **17 tools**, the hybrid conflict pipeline
+(retrieval → LLM judge → evidence gate, validated on a real LLM), propagation/alerts,
+handoff, the Claude Code adapter (SessionStart / UserPromptSubmit / PreToolUse
+deny-once / PostToolUse drift), a read-only dashboard, and a Cloud Run deploy — with a
+~170-test pytest suite. Next steps and open items are tracked in [BACKLOG.md](BACKLOG.md),
+gated **P0 / P1 / P2**.
 
 ## Where Keel fits
 
@@ -121,4 +135,5 @@ AI work is going multiplayer. Live shared sessions solve collaboration *inside* 
 
 ## License
 
-Apache-2.0 **proposed** — see `OPEN_QUESTIONS` #10 (not yet settled; do not treat as final).
+[Apache-2.0](LICENSE). (The project **name** "Keel" is still a placeholder — see
+`OPEN_QUESTIONS` #1 — but the license is settled.)
