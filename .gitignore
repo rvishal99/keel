@@ -35,6 +35,9 @@ htmlcov/
 /.superpowers/
 
 # Demo: local secrets, logs, and runtime-copied hooks
+/demo/
 /demo/env.local
 /demo/*.log
 /demo/workspace/.claude/hooks/
+.env*
+/env.local

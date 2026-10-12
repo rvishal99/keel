@@ -114,7 +114,6 @@ keel/
 - [ARCHITECTURE.md](ARCHITECTURE.md) — components, data model, conflict pipeline, delivery, providers, deploy.
 - [adapters/agent-skill/SKILL.md](adapters/agent-skill/SKILL.md) — how any MCP agent uses the 17 tools.
 - [deploy/cloudrun/README.md](deploy/cloudrun/README.md) — deploy on Google Cloud Run (Gemini + Cloud SQL/pgvector).
-- [demo/DEMO.md](demo/DEMO.md) — the live demo runbook.
 - [BACKLOG.md](BACKLOG.md) — roadmap as issue-ready items.
 - [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 
