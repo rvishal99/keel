@@ -27,7 +27,8 @@ async def propagate_decision(conn, project_id, decision_row, author_participant_
         a = await repo.insert_alert(conn, project_id=project_id, target_participant_id=part_id,
                                     target_person_id=person_id, kind="change",
                                     ref_id=decision_row["id"])
-        alert_ids.append(str(a["id"]))
+        if a is not None:
+            alert_ids.append(str(a["id"]))
     if alert_ids:
         await append_event(conn, project_id, actor="propagation", action="alerts.created",
                            payload={"kind": "change", "decision_id": str(decision_row["id"]),
@@ -52,7 +53,8 @@ async def propagate_conflicts(conn, project_id, conflicts, author_participant_id
             a = await repo.insert_alert(conn, project_id=project_id, target_participant_id=p["id"],
                                         target_person_id=cand["owner_person_id"], kind="conflict",
                                         ref_id=c["conflict_id"])
-            alert_ids.append(str(a["id"]))
+            if a is not None:
+                alert_ids.append(str(a["id"]))
     if alert_ids:
         await append_event(conn, project_id, actor="propagation", action="alerts.created",
                            payload={"kind": "conflict", "count": len(alert_ids)})
