@@ -77,6 +77,8 @@ CREATE TABLE IF NOT EXISTS dependency (
     dependent_ref  text NOT NULL,
     created_at     timestamptz NOT NULL DEFAULT now()
 );
+CREATE INDEX IF NOT EXISTS dependency_decision_idx ON dependency (decision_id);
+CREATE INDEX IF NOT EXISTS dependency_dependent_ref_idx ON dependency (dependent_type, dependent_ref);
 
 CREATE TABLE IF NOT EXISTS claim (
     id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -85,6 +87,7 @@ CREATE TABLE IF NOT EXISTS claim (
     scope_tags     text[] NOT NULL,
     expires_at     timestamptz
 );
+CREATE INDEX IF NOT EXISTS claim_participant_idx ON claim (participant_id);
 
 CREATE TABLE IF NOT EXISTS conflict (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -113,6 +116,9 @@ CREATE TABLE IF NOT EXISTS alert (
     acknowledged_at      timestamptz
 );
 ALTER TABLE alert ADD COLUMN IF NOT EXISTS created_at timestamptz NOT NULL DEFAULT now();
+CREATE INDEX IF NOT EXISTS alert_target_ack_idx ON alert (target_participant_id, acknowledged_at);
+CREATE UNIQUE INDEX IF NOT EXISTS alert_unacked_change_idx ON alert (target_participant_id, ref_id)
+    WHERE kind = 'change' AND acknowledged_at IS NULL;
 
 CREATE TABLE IF NOT EXISTS event (
     id          bigserial PRIMARY KEY,
@@ -140,6 +146,7 @@ CREATE TABLE IF NOT EXISTS handoff (
     created_at        timestamptz NOT NULL DEFAULT now(),
     accepted_at       timestamptz
 );
+CREATE INDEX IF NOT EXISTS handoff_to_person_status_idx ON handoff (project_id, to_person_id, status);
 
 CREATE TABLE IF NOT EXISTS outcome (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),

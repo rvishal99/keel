@@ -45,3 +45,11 @@ def test_settings_fragment_declares_posttooluse():
         cfg = json.load(f)
     assert "PostToolUse" in cfg["hooks"]
     assert "post_tool_use.sh" in json.dumps(cfg["hooks"]["PostToolUse"])
+
+
+def test_keel_call_multiline_response_parsing():
+    helper = os.path.join(ADAPTER, "hooks", "_keel_call.sh")
+    assert os.path.exists(helper)
+    with open(helper) as f:
+        src = f.read()
+    assert "__KEEL_STATUS__" in src

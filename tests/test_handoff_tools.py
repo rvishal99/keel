@@ -48,6 +48,24 @@ async def test_create_handoff_empty_scope_errors(conn, db_pool):
                              to_person="mate", scope_tags=["   "])
 
 
+async def test_create_handoff_unknown_to_session_errors(conn, db_pool):
+    pid, sender, spart, receiver, rpart, d = await _project_with_decision(conn)
+    with pytest.raises(LookupError, match="session 'bogus' not found for recipient 'mate'"):
+        await create_handoff(db_pool, Principal(pid, sender, "s1"),
+                             to_person="mate", scope_tags=["api:orders"],
+                             to_session="bogus")
+
+
+async def test_create_handoff_with_valid_to_session(conn, db_pool):
+    pid, sender, spart, receiver, rpart, d = await _project_with_decision(conn)
+    out = await create_handoff(db_pool, Principal(pid, sender, "s1"),
+                               to_person="mate", scope_tags=["api:orders"],
+                               to_session="s2")
+    assert out["status"] == "pending"
+    h = await repo.get_handoff(conn, out["handoff_id"])
+    assert h["to_participant_id"] == rpart
+
+
 async def test_accept_handoff_transfers_claim_and_deps(conn, db_pool):
     from datetime import datetime, timedelta, timezone
     pid, sender, spart, receiver, rpart, d = await _project_with_decision(conn)

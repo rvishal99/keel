@@ -63,7 +63,8 @@ async def report_activity(pool, principal: Principal, *, source, scope_tags=None
                                             target_participant_id=participant["id"],
                                             target_person_id=principal.person_id,
                                             kind="change", ref_id=alert_ref)
-                alert_id = str(a["id"])
+                if a is not None:
+                    alert_id = str(a["id"])
             await append_event(conn, principal.project_id,
                                actor=f"person:{principal.person_id}/session:{principal.session_id}",
                                action="activity.reported",

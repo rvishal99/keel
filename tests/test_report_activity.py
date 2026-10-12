@@ -89,3 +89,20 @@ async def test_report_activity_dedupes_self_alert(conn, db_pool):
     await report_activity(db_pool, Principal(pid, person, "s1"), source="edit",
                           scope_tags=["api:orders"], summary="touch orders again", file_paths=["o.py"])
     assert len(await repo.project_pending_alerts(conn, pid)) == 1  # a fresh one
+
+
+async def test_insert_alert_atomic_dedupe_on_conflict(conn):
+    pid = await repo.upsert_project(conn, "demo")
+    person = await repo.upsert_person(conn, pid, "vasan", "h")
+    part = await repo.upsert_participant(conn, pid, person, "cc", "deep", "s1", [])
+    d = await repo.insert_decision(conn, project_id=pid, statement="orders cursor",
+                                   rationale="r", scope_tags=["api:orders"], owner_person_id=person,
+                                   source_participant_id=part)
+    a1 = await repo.insert_alert(conn, project_id=pid, target_participant_id=part,
+                                 target_person_id=person, kind="change", ref_id=d["id"])
+    assert a1 is not None
+    a2 = await repo.insert_alert(conn, project_id=pid, target_participant_id=part,
+                                 target_person_id=person, kind="change", ref_id=d["id"])
+    assert a2 is None
+    alerts = await repo.project_pending_alerts(conn, pid)
+    assert len(alerts) == 1

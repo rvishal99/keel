@@ -11,14 +11,14 @@ keel_call() {
   body=$(jq -cn --arg name "$tool" --argjson args "$args" \
     '{jsonrpc:"2.0",id:1,method:"tools/call",params:{name:$name,arguments:$args}}') || return 1
   local resp code payload
-  resp=$(curl -s --max-time 5 -w '\n%{http_code}' -X POST "$url" \
+  resp=$(curl -s --max-time 5 -w '\n__KEEL_STATUS__:%{http_code}' -X POST "$url" \
     -H "Authorization: Bearer ${KEEL_TOKEN}" \
     -H "X-Keel-Session: ${sid}" \
     -H "Content-Type: application/json" \
     -H "Accept: application/json, text/event-stream" \
     -d "$body") || return 1
-  code="${resp##*$'\n'}"
-  payload="${resp%$'\n'*}"
+  code="${resp##*$'\n'__KEEL_STATUS__:}"
+  payload="${resp%$'\n'__KEEL_STATUS__:*}"
   [ "$code" = "200" ] || return 1
   # fail if the tool itself reported an error
   [ "$(printf '%s' "$payload" | jq -r '.result.isError' 2>/dev/null)" = "true" ] && return 1
